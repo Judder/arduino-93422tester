@@ -51,7 +51,11 @@ uint8_t addr_pins[] = {pinA0, pinA1, pinA2, pinA3, pinA4, pinA5, pinA6, pinA7};
 uint8_t out_pins[] = {pinD0, pinD1, pinD2, pinD3};
 uint8_t in_pins[] = {pinO0, pinO1, pinO2, pinO3};
 
-bool debug = false;
+bool debug = false; //debug mode for showing detailed serial output
+bool sharedpins = false; //used if we are sharing pins between out_pins and in_pins
+int stresstest = 0xff; //how many time to run our end to end memory test to stress the RAM chip
+
+//No need to change anything after here
 
 int failed = 0;
 
@@ -150,7 +154,9 @@ void writeData(uint8_t data)
     
     for (int i = 0; i < sizeof(out_pins); i++) 
     {
-      pinMode(out_pins[i], OUTPUT);
+      if (sharedpins) {
+          pinMode(out_pins[i], OUTPUT);
+      }
       digitalWrite(out_pins[i], ((data >> i) & 1));
     }
     if (debug) {
@@ -168,7 +174,9 @@ int readData()
     uint8_t readback=0;
     for (int i = 0; i < sizeof(in_pins); i++) 
     {
-      pinMode(in_pins[i], INPUT_PULLUP);
+      if (sharedpins) {
+          pinMode(in_pins[i], INPUT_PULLUP);
+      }
       readback = readback | ((digitalRead(in_pins[i]) << i));
     }
     if (debug) {
@@ -179,8 +187,7 @@ int readData()
 
 void incrementCheck()
 {
-  int stress_test = 0xff;
-  for (int h=0; h <= stress_test; h++)
+  for (int h=0; h <= stresstest; h++)
   {
     uint8_t currenti = 0xff;
     //write incrementing values
