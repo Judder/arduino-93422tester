@@ -9,12 +9,12 @@
 
 // 93422
 //
-// A3  [1] (3)   (5V) [22] Vcc
+// A3  [1] (3)  (+5V) [22] Vcc
 // A2  [2] (2)    (4) [21] A4
 // A1  [3] (A0)  (A3) [20] _WE
 // A0  [4] (A1) (GND) [19] _CS1
 // A5  [5] (5)   (A2) [18] _OE
-// A6  [6] (6)   (+5) [17] CS2
+// A6  [6] (6)  (+5V) [17] CS2
 // A7  [7] (7)   (A5) [16] O3
 // GND [8] (GND) (11) [15] D3
 // D0  [9] (8)   (A4) [14] O2
@@ -81,6 +81,32 @@ void setup()
     for (int i = 0; i < sizeof(out_pins); i++)
     {
       pinMode(out_pins[i], OUTPUT);
+      digitalWrite(out_pins[i], LOW);
+    }
+
+    digitalWrite(pinOE, HIGH); //output disable, active low
+    digitalWrite(pinWE, LOW); //write mode, active low
+
+    digitalWrite(pinOE, LOW); //enable, active low
+    digitalWrite(pinWE, HIGH); //read mode, active low
+    
+    //set data pins as input
+    for (int i = 0; i < sizeof(in_pins); i++)
+    {
+      pinMode(in_pins[i], INPUT_PULLUP);
+      uint8_t readback = digitalRead(in_pins[i]);
+      if (readback == 0) {
+        Serial.println("Initialisation check: pin " + String(i, DEC) + " LOW passed");
+      } else {
+        Serial.println("Initialisation check: pin " + String(i, DEC) + " LOW failed");
+        failed++;
+      }
+    }
+
+    //set output pins as output
+    for (int i = 0; i < sizeof(out_pins); i++)
+    {
+      pinMode(out_pins[i], OUTPUT);
       digitalWrite(out_pins[i], HIGH);
     }
 
@@ -96,9 +122,9 @@ void setup()
       pinMode(in_pins[i], INPUT_PULLUP);
       uint8_t readback = digitalRead(in_pins[i]);
       if (readback == 1) {
-        Serial.println("Initialisation check: bit " + String(i, BIN) + " passed");
+        Serial.println("Initialisation check: pin " + String(i, DEC) + " HIGH passed");
       } else {
-        Serial.println("Initialisation check: bit " + String(i, BIN) + " failed");
+        Serial.println("Initialisation check: pin " + String(i, DEC) + " HIGH failed");
         failed++;
       }
     }
@@ -153,8 +179,8 @@ int readData()
 
 void incrementCheck()
 {
-  int stress_test = 20;
-  for (int h=0; h < stress_test; h++)
+  int stress_test = 0xff;
+  for (int h=0; h <= stress_test; h++)
   {
     uint8_t currenti = 0xff;
     //write incrementing values
@@ -162,7 +188,7 @@ void incrementCheck()
     {
       if (currenti != i) {
         currenti = i;
-        Serial.println("Testing value: " + String(i, BIN));
+        Serial.println("Testing value: [" + String(h, HEX) + "] " + String(i, BIN));
       }
       for (int j=0; j < max_addr; j++)
       {
