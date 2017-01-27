@@ -1,2 +1,2 @@
 # arduino-93422tester
-Arduino tester code for 94322 RAM chips
+Arduino tester code for 93422 RAM chips
