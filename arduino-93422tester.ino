@@ -47,6 +47,8 @@
 
 #define max_addr 0xff
 
+#define SERIAL_BAUD_RATE 9600
+
 uint8_t addr_pins[] = {pinA0, pinA1, pinA2, pinA3, pinA4, pinA5, pinA6, pinA7};
 uint8_t out_pins[] = {pinD0, pinD1, pinD2, pinD3};
 uint8_t in_pins[] = {pinO0, pinO1, pinO2, pinO3};
@@ -61,7 +63,7 @@ int failed = 0;
 
 void setup() 
 {
-    Serial.begin(9600);
+    Serial.begin(SERIAL_BAUD_RATE);
     Serial.println("Initialising:"); //debug
     
     //set chip select and enable/write to output and configure
@@ -222,7 +224,10 @@ void incrementCheck()
 void loop()
 {
     if (failed == 0) {
+      uint8_t duration = micros();
       incrementCheck();
+      duration = micros() - duration;
+      Serial.println("Duration: " + String(duration, DEC));
     }
     if (failed > 0) {
       Serial.println("Result: Failed (" + String(failed, BIN) + ")");
